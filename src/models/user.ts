@@ -29,6 +29,11 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public static async hashPassword(password: string): Promise<string> {
         return await bcrypt.hash(password, 10);
     }
+
+    // Verify password
+    public async verifyPassword(password: string): Promise<boolean> {
+        return await bcrypt.compare(password, this.password);
+    }
 }
 
 User.init(
