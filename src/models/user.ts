@@ -25,18 +25,11 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 
-    // hash password
+    // Hash password
     public static async hashPassword(password: string): Promise<string> {
         return await bcrypt.hash(password, 10);
     }
 }
-
-// Hook for hashing password before creating new user
-User.addHook('beforeSave', async (user: User) => {
-    if (user.changed('password')) {
-        user.password = await User.hashPassword(user.password);
-    }
-});
 
 User.init(
     {
@@ -80,5 +73,11 @@ User.init(
         tableName: 'users',
     }
 );
+
+User.addHook('beforeSave', async (user: User) => {
+    if (user.changed('password')) {
+        user.password = await User.hashPassword(user.password);
+    }
+});
 
 export default User;
