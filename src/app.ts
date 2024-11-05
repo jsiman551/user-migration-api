@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import sequelize from './config/database';
 import authRoutes from './routes/authRoutes';
+import { errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
 
@@ -18,6 +19,8 @@ sequelize.authenticate()
     });
 
 app.use('/', authRoutes);
+
+app.use(errorHandler);
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
