@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import sequelize from './config/database';
 import authRoutes from './routes/authRoutes';
+import uploadRoutes from './routes/uploadRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
@@ -19,6 +20,7 @@ sequelize.authenticate()
     });
 
 app.use('/', authRoutes);
+app.use('/', uploadRoutes);
 
 app.use(errorHandler);
 

@@ -10,7 +10,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         const token = generateToken(user);
 
         res.status(200).json({
-            status: 200,
+            ok: true,
             message: "User authenticated successfully.",
             data: {
                 token,
