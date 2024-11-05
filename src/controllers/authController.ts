@@ -8,7 +8,15 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
         const user = await authenticateUser(email, password);
         const token = generateToken(user);
-        res.status(200).json({ token });
+
+        res.status(200).json({
+            status: 200,
+            message: "User authenticated successfully.",
+            data: {
+                token,
+            },
+        });
+
         return;
 
     } catch (error) {
