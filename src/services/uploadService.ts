@@ -12,6 +12,7 @@ interface CsvUploadResult {
 export const processCsvUpload = async (fileBuffer: Buffer): Promise<CsvUploadResult> => {
     const results: any[] = [];
     const errors: any[] = [];
+    const promises: Promise<void>[] = [];
 
     return new Promise((resolve, reject) => {
         const stream = Readable.from(fileBuffer.toString());
@@ -19,47 +20,67 @@ export const processCsvUpload = async (fileBuffer: Buffer): Promise<CsvUploadRes
 
         stream
             .pipe(csvParser())
-            .on('data', async (row) => {
+            .on('data', (row) => {
                 const { name, email, age } = row;
 
-                try {
-                    const validatedData = csvRowSchema.parse({ name, email, age: parseInt(age) });
+                const userCreationPromise = (async () => {
+                    try {
+                        // zod validations
+                        const validatedData = csvRowSchema.parse({
+                            name,
+                            email,
+                            age: parseInt(age),
+                        });
 
-                    const userData: UserCreationAttributes = {
-                        ...validatedData,
-                        role: 'user',
-                        password: '123456',
-                    };
+                        const userData: UserCreationAttributes = {
+                            ...validatedData,
+                            role: 'user',
+                            password: '123456',
+                        };
 
-                    // Create the user
-                    const newUser = await User.create(userData);
-                    results.push(newUser);
-                } catch (error) {
-                    if (error instanceof ZodError) {
-                        errors.push({
-                            row: csvResults.length + 1,
-                            details: error.errors.map((e) => e.message).join(', '),
-                        });
-                    } else if (error instanceof Error) {
-                        errors.push({
-                            row: csvResults.length + 1,
-                            details: error.message || 'Error creating user',
-                        });
-                    } else {
-                        errors.push({
-                            row: csvResults.length + 1,
-                            details: 'An unknown error occurred',
-                        });
+                        const newUser = await User.create(userData);
+
+                        const { password, ...userWithoutSensitiveData } = newUser.toJSON();
+
+                        results.push(userWithoutSensitiveData);
+
+                    } catch (error) {
+                        if (error instanceof ZodError) {
+                            errors.push({
+                                row: csvResults.length + 1,
+                                title: error.errors.map((e) => e.message).join(', '),
+                                source: { pointer: error.errors[0].path[0] },
+                            });
+                        } else if (error instanceof Error) {
+                            console.log(error)
+                            errors.push({
+                                row: csvResults.length + 1,
+                                title: error.name === 'SequelizeUniqueConstraintError' ? 'email must be unique' : 'Error creating user',
+                                details: error.message,
+                            });
+                        } else {
+                            errors.push({
+                                row: csvResults.length + 1,
+                                title: 'An unknown error occurred',
+                            });
+                        }
                     }
-                }
+                })();
 
+                promises.push(userCreationPromise);
                 csvResults.push(row);
             })
-            .on('end', () => {
-                resolve({
-                    success: results,
-                    errors: errors,
-                });
+            .on('end', async () => {
+                try {
+                    await Promise.all(promises);
+
+                    resolve({
+                        success: results,
+                        errors: errors,
+                    });
+                } catch (err) {
+                    reject(err);
+                }
             })
             .on('error', (err) => {
                 reject(err);

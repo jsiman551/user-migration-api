@@ -8,8 +8,12 @@ export const uploadCsv = async (req: Request, res: Response, next: NextFunction)
             return;
         }
 
-        const result = await processCsvUpload(req.file.buffer);
+        const result = {
+            ok: true,
+            data: await processCsvUpload(req.file.buffer)
+        }
         res.status(200).json(result);
+
     } catch (error) {
         next(error);
     }
