@@ -1,5 +1,9 @@
 {
     "compilerOptions": {
+        "types": [
+            "vitest/globals"
+        ],
+        "moduleResolution": "node",
         "target": "ES6",
         "module": "commonjs",
         "strict": true,
