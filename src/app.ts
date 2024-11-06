@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import dotenv from 'dotenv';
 import sequelize from './config/database';
 import authRoutes from './routes/authRoutes';
@@ -19,8 +19,14 @@ sequelize.authenticate()
         console.error('Failed to connect to database:', err);
     });
 
-app.use('/', authRoutes);
-app.use('/', uploadRoutes);
+//set routes
+const apiRouter = Router();
+
+apiRouter.use(authRoutes);
+apiRouter.use(uploadRoutes);
+
+app.use('/', apiRouter);
+
 
 app.use(errorHandler);
 
