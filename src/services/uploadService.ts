@@ -52,11 +52,10 @@ export const processCsvUpload = async (fileBuffer: Buffer): Promise<CsvUploadRes
                                 source: { pointer: error.errors[0].path[0] },
                             });
                         } else if (error instanceof Error) {
-                            console.log(error)
                             errors.push({
                                 row: csvResults.length + 1,
-                                title: error.name === 'SequelizeUniqueConstraintError' ? 'email must be unique' : 'Error creating user',
-                                details: error.message,
+                                title: error.message,
+                                details: error.name === 'SequelizeUniqueConstraintError' ? `${email} is already registered` : 'Error creating user',
                             });
                         } else {
                             errors.push({
