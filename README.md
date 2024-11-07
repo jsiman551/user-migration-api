@@ -18,22 +18,24 @@ Este proyecto es una API RESTful desarrollada en **Node.js** con **Express** y *
 ## Configuración del Proyecto
 
 1. **Clonar el repositorio**:
-   ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd nombre-del-repositorio
-  ```
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd nombre-del-repositorio
+```
 
 2. Instalar dependencias:
 
 ```bash
 npm install
 ```
+
 3. Crea un archivo .env en la raíz del proyecto con las siguientes variables:
 
 ```plaintext
 DATABASE_URL=postgres://usuario:contraseña@localhost:5432/nombre_base_datos
 JWT_SECRET=tu_secreto_jwt
 ```
+
 4. Correr el servidor de desarrollo:
 
 ```bash
@@ -93,7 +95,7 @@ npm run test
 
 - **Form Data**: 
 
-    - `file`: Archivo CSV con datos de los usuarios (nombre, email, edad).
+    - `file`: Archivo CSV con datos de los usuarios (name, email, age).
 
 - **Response**
 
