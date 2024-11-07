@@ -13,7 +13,9 @@ Este proyecto es una API RESTful desarrollada en **Node.js** con **Express** y *
 - **Zod**: Biblioteca para la validación y el manejo de esquemas de datos.
 - **Vitest**: Herramienta de pruebas para ejecutar y verificar los tests de unidad.
 - **Multer**: Middleware para la gestión de cargas de archivos.
+- **csv-parser**: Para leer y procesar archivos CSV.
 - **bcrypt**: Para el hashing seguro de contraseñas.
+- **sequelize-cli**: Para ejecutar migraciones de la estructura de base de datos.
 
 ## Configuración del Proyecto
 
@@ -36,13 +38,25 @@ DATABASE_URL=postgres://usuario:contraseña@localhost:5432/nombre_base_datos
 JWT_SECRET=tu_secreto_jwt
 ```
 
-4. Correr el servidor de desarrollo:
+4. Correr migracion de estructura de base de datos:
+
+```bash
+npx sequelize-cli db:migrate
+```
+
+5. Correr seed para introducir al usuario `admin` a base de datos:
+
+```bash
+npm run seed
+```
+
+6. Correr el servidor de desarrollo:
 
 ```bash
 npm run dev
 ```
 
-6. Ejecutar pruebas:
+7. Ejecutar pruebas:
 
 Ejecuta las pruebas con Vitest para verificar que el sistema funcione como se espera.
 
