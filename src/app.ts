@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import sequelize from './config/database';
 import authRoutes from './routes/authRoutes';
@@ -18,6 +19,9 @@ sequelize.authenticate()
     .catch((err) => {
         console.error('Failed to connect to database:', err);
     });
+
+// allow any origin to access server    
+app.use(cors({ origin: '*' }));
 
 //set routes
 const apiRouter = Router();
