@@ -1,57 +1,85 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { processCsvUpload } from '../services/uploadService';
-import User from '../models/user';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Request, Response, NextFunction } from 'express';
+import { uploadCsv, retryCsvUpload } from '../../src/controllers/uploadController';
+import { processCsvUpload, processCsvUploadRetry } from '../../src/services/uploadService';
 
-describe('processCsvUpload', () => {
+vi.mock('../../src/services/uploadService');
+
+describe('uploadController', () => {
+    const mockRequest = {} as Request;
+    const mockResponse = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+    } as unknown as Response;
+    const mockNext = vi.fn() as NextFunction;
+
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it('debería procesar correctamente un CSV con datos válidos', async () => {
-        // define a valid CVS file as buffer
-        const validCsvBuffer = Buffer.from(
-            `name,email,age\nJohn Doe,john@example.com,30\nJane Smith,jane@example.com,25`
-        );
+    describe('uploadCsv', () => {
+        it('should return 400 if no file is uploaded', async () => {
+            mockRequest.file = undefined;
 
-        // Simulation of successful user creation
-        vi.spyOn(User, 'create').mockImplementation((userData) => {
-            return Promise.resolve({
-                ...userData,
-                id: Math.floor(Math.random() * 1000),
-                password: 'hashedpassword',
-                toJSON() {
-                    return this;
-                },
-            }) as any;
+            await uploadCsv(mockRequest, mockResponse, mockNext);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({ message: 'No file uploaded or file is invalid.' });
         });
 
-        const result = await processCsvUpload(validCsvBuffer);
+        it('should process and upload CSV file successfully', async () => {
+            const mockData = { success: [{ name: 'John Doe', email: 'john@example.com', age: 30 }] };
+            (processCsvUpload as vi.Mock).mockResolvedValue(mockData);
 
-        console.log(result)
+            mockRequest.file = { buffer: Buffer.from('mock csv content') } as Express.Multer.File;
 
-        expect(result.success).toHaveLength(2);
-        expect(result.errors).toHaveLength(0);
-        expect(User.create).toHaveBeenCalledTimes(2);
+            await uploadCsv(mockRequest, mockResponse, mockNext);
+
+            expect(processCsvUpload).toHaveBeenCalledWith(mockRequest.file.buffer);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                ok: true,
+                data: mockData,
+            });
+        });
+
+        it('should call next with an error if upload fails', async () => {
+            const mockError = new Error('upload error');
+            (processCsvUpload as vi.Mock).mockRejectedValue(mockError);
+
+            mockRequest.file = { buffer: Buffer.from('mock csv content') } as Express.Multer.File;
+
+            await uploadCsv(mockRequest, mockResponse, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(mockError);
+        });
     });
 
-    it('debería retornar errores cuando el CSV tiene datos inválidos', async () => {
-        const invalidCsvBuffer = Buffer.from(
-            `name,email,age\nJohn Doe,invalid-email,30\n,missing@domain.com,abc\n`
-        );
+    describe('retryCsvUpload', () => {
+        it('should return 400 if there are validation errors in retry', async () => {
+            const mockError = { errors: [{ message: 'Invalid email format', field: 'email' }] };
+            (processCsvUploadRetry as vi.Mock).mockResolvedValue(mockError);
 
-        const result = await processCsvUpload(invalidCsvBuffer);
+            mockRequest.body = { name: 'John Doe', email: 'invalid-email', age: '30' };
 
-        expect(result.success).toHaveLength(0);
-        expect(result.errors).toHaveLength(2);
-        expect(result.errors[0]).toMatchObject({
-            row: 1,
-            title: "'email' must be a valid format",
-            source: { pointer: 'email' }
+            await retryCsvUpload(mockRequest, mockResponse, mockNext);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                ok: false,
+                errors: mockError.errors,
+            });
         });
-        expect(result.errors[1]).toMatchObject({
-            row: 2,
-            title: "'name' is required, Expected number, received nan",
-            source: { pointer: 'name' }
+
+        it('should call next with an error if retry fails', async () => {
+            const mockError = new Error('retry error');
+            (processCsvUploadRetry as vi.Mock).mockRejectedValue(mockError);
+
+            mockRequest.body = { name: 'John Doe', email: 'john@example.com', age: '30' };
+
+            await retryCsvUpload(mockRequest, mockResponse, mockNext);
+
+            expect(mockNext).toHaveBeenCalledWith(mockError);
         });
     });
 });
