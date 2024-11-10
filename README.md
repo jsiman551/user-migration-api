@@ -137,6 +137,48 @@ npm run test
 - **400 Bad Request**: Errores de validación de datos en el archivo CSV.
 - **401 Unauthorized**: Si el token JWT es inválido o falta.
 
+### Reintento de Carga de Usuario
+
+`POST /upload/retry`
+
+- **Descripción**: Descripción: Permite reintentar la carga de un usuario individual, enviando los datos name, email y age de un usuario para guardarlos en la base de datos. Este endpoint está diseñado para ser utilizado cuando se encuentran errores durante la carga masiva de usuarios.
+
+- **Headers**: 
+
+    - `Authorization`: Token JWT del administrador.
+
+- **Body**: 
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "age": "30"
+}
+```
+- **Response**
+
+`200 OK`
+
+```json
+{
+  "ok": true,
+  "message": "User uploaded successfully.",
+  "data": {
+    "id": 123,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "age": 30
+  }
+}
+```
+
+- **400 Bad Request**: Si los datos no cumplen con las validaciones (por ejemplo, un campo obligatorio está vacío o un formato es incorrecto).
+
+- **401 Unauthorized**: Si el token JWT es inválido o falta.
+
+- **500 Internal Server Error**: Si ocurre un error en el servidor durante el procesamiento.
+
 ## Estructura del Proyecto
 - **controllers**: Controladores de cada endpoint, donde se define la lógica de cada ruta.
 
