@@ -89,3 +89,38 @@ export const processCsvUpload = async (fileBuffer: Buffer): Promise<CsvUploadRes
             });
     });
 };
+
+export const processCsvUploadRetry = async (retryData: Array<{ name: string; email: string; age: string }>) => {
+    try {
+        const userData = retryData[0];
+
+        csvRowSchema.parse(userData);
+
+        const newUser = await User.create({
+            name: userData.name,
+            email: userData.email,
+            age: parseInt(userData.age, 10),
+            password: '123456',
+            role: 'user',
+        });
+
+        return {
+            success: {
+                id: newUser.id,
+                name: newUser.name,
+                email: newUser.email,
+                age: newUser.age,
+                role: newUser.role,
+            },
+            errors: [],
+        };
+    } catch (error) {
+        if (error instanceof ZodError) {
+            return {
+                errors: error.errors.map(err => err.message),
+            };
+        }
+
+        throw new Error('Error processing user registration: ' + error);
+    }
+};
