@@ -1,64 +1,64 @@
-# Proyecto de Carga y Validación de Usuarios
+# User Upload and Validation Project
 
-Este proyecto es una API RESTful desarrollada en **Node.js** con **Express** y **TypeScript**. Permite la autenticación de usuarios y la carga de archivos CSV para crear registros de usuarios en una base de datos **PostgreSQL**. La aplicación permite que solo los administradores puedan cargar archivos CSV para crear nuevos usuarios, y proporciona validación de datos para garantizar la consistencia y calidad de los datos ingresados.
+This project is a RESTful API developed in **Node.js** with **Express** and **TypeScript**. It enables user authentication and CSV file uploads to create user records in a **PostgreSQL** database. The application allows only administrators to upload CSV files to create new users, and provides data validation to ensure the consistency and quality of the entered data.
 
 ## Tecnologías utilizadas
 
-- **Node.js**: Entorno de ejecución para el backend.
-- **Express**: Framework para construir APIs y manejar rutas.
-- **TypeScript**: Superset de JavaScript que añade tipos estáticos.
-- **PostgreSQL**: Base de datos relacional utilizada para almacenar usuarios.
-- **Sequelize**: ORM para interactuar con PostgreSQL.
-- **JWT**: JSON Web Tokens para la autenticación y autorización.
-- **Zod**: Biblioteca para la validación y el manejo de esquemas de datos.
-- **Vitest**: Herramienta de pruebas para ejecutar y verificar los tests de unidad.
-- **Multer**: Middleware para la gestión de cargas de archivos.
-- **csv-parser**: Para leer y procesar archivos CSV.
-- **bcrypt**: Para el hashing seguro de contraseñas.
-- **sequelize-cli**: Para ejecutar migraciones de la estructura de base de datos.
+- **Node.js**: Runtime environment for the backend.
+- **Express**: Framework for building APIs and handling routes.
+- **TypeScript**: Superset of JavaScript that adds static types.
+- **PostgreSQL**: Relational database used to store users.
+- **Sequelize**: ORM to interact with PostgreSQL.
+- **JWT**: JSON Web Tokens for authentication and authorization.
+- **Zod**: Library for validation and handling data schemas.
+- **Vitest**: Testing tool to run and verify unit tests.
+- **Multer**: Middleware for file upload management.
+- **csv-parser**: For reading and processing CSV files.
+- **bcrypt**: For secure password hashing.
+- **sequelize-cli**: For running database structure migrations.
 
-## Configuración del Proyecto
+## Project Setup
 
-1. **Clonar el repositorio**:
+1. **Clone the repository**:
 ```bash
 git clone <URL_DEL_REPOSITORIO>
-cd nombre-del-repositorio
+cd repository-name
 ```
 
-2. Instalar dependencias:
+2. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Crea un archivo .env en la raíz del proyecto con las siguientes variables:
+3. Create a .env file in the root of the project with the following variables:
 
 ```plaintext
 DATABASE_URL=postgres://usuario:contraseña@localhost:5432/nombre_base_datos
 JWT_SECRET=tu_secreto_jwt
 ```
 
-4. Correr migracion de estructura de base de datos:
+4. Run database structure migration:
 
 ```bash
 npx sequelize-cli db:migrate
 ```
 
-5. Correr seed para introducir al usuario `admin` a base de datos:
+5. Run seed to insert the `admin` user into the database:
 
 ```bash
 npm run seed
 ```
 
-6. Correr el servidor de desarrollo:
+6. Run the development server:
 
 ```bash
 npm run dev
 ```
 
-7. Ejecutar pruebas:
+7. Run tests:
 
-Ejecuta las pruebas con Vitest para verificar que el sistema funcione como se espera.
+Run tests with Vitest to verify that the system works as expected.
 
 ```bash
 npm run test
@@ -66,11 +66,11 @@ npm run test
 
 ## Endpoints
 
-### Autenticación
+### Authentication
 
 `POST /login`
 
-- **Descripción**: Permite autenticar a un usuario y generar un token JWT.
+- **Description**: Allows a user to authenticate and generate a JWT token.
 
 - **Body**: 
 
@@ -95,21 +95,21 @@ npm run test
 }
 ```
 
-- **400 Bad Request**: Error en los datos de entrada.
+- **400 Bad Request**: Error in input data.
 
-### Carga de Usuarios
+### User Upload
 
 `POST /upload`
 
-- **Descripción**: Permite a un administrador cargar un archivo CSV para crear múltiples usuarios en la base de datos.
+- **Description**: Allows an administrator to upload a CSV file to create multiple users in the database.
 
 - **Headers**: 
 
-    - `Authorization`: Token JWT del administrador.
+    - `Authorization`: JWT token of the administrator.
 
 - **Form Data**: 
 
-    - `file`: Archivo CSV con datos de los usuarios (name, email, age).
+    - `file`: CSV file with user data (name, email, age).
 
 - **Response**
 
@@ -134,18 +134,18 @@ npm run test
 }
 ```
 
-- **400 Bad Request**: Errores de validación de datos en el archivo CSV.
-- **401 Unauthorized**: Si el token JWT es inválido o falta.
+- **400 Bad Request**: Data validation errors in the CSV file.
+- **401 Unauthorized**: If the JWT token is invalid or missing.
 
-### Reintento de Carga de Usuario
+### Retry User Upload
 
 `POST /upload/retry`
 
-- **Descripción**: Descripción: Permite reintentar la carga de un usuario individual, enviando los datos name, email y age de un usuario para guardarlos en la base de datos. Este endpoint está diseñado para ser utilizado cuando se encuentran errores durante la carga masiva de usuarios.
+- **Description**: Allows retrying the upload of an individual user, sending the name, email and age data of a user to save them in the database. This endpoint is designed to be used when errors are found during bulk user uploads.
 
 - **Headers**: 
 
-    - `Authorization`: Token JWT del administrador.
+    - `Authorization`: JWT token of the administrator.
 
 - **Body**: 
 
@@ -173,19 +173,19 @@ npm run test
 }
 ```
 
-- **400 Bad Request**: Si los datos no cumplen con las validaciones (por ejemplo, un campo obligatorio está vacío o un formato es incorrecto).
+- **400 Bad Request**: If the data does not meet the validations (for example, a required field is empty or a format is incorrect).
 
-- **401 Unauthorized**: Si el token JWT es inválido o falta.
+- **401 Unauthorized**: If the JWT token is invalid or missing.
 
-- **500 Internal Server Error**: Si ocurre un error en el servidor durante el procesamiento.
+- **500 Internal Server Error**: If an error occurs on the server during processing.
 
-## Estructura del Proyecto
-- **controllers**: Controladores de cada endpoint, donde se define la lógica de cada ruta.
+## Project Structure
+- **controllers**: Controllers of each endpoint, where the logic of each route is defined.
 
-- **models**: Definiciones de modelos de datos y esquemas Sequelize.
+- **models**: Definitions of data models and Sequelize schemas.
 
-- **services**: Lógica de negocio, como autenticación y procesamiento de archivos CSV.
+- **services**: Business logic, such as authentication and CSV file processing.
 
-- **schemas**: Validaciones de datos con Zod para asegurar la estructura de los datos de entrada.
+- **schemas**: Data validations with Zod to ensure the structure of the input data.
 
-- **tests**: Pruebas de unidad y de integración para asegurar la funcionalidad del sistema.
+- **tests**: Unit and integration tests to ensure the system functionality.
